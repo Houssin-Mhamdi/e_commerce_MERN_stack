@@ -4,6 +4,7 @@ const morgan = require('morgan')
 require("dotenv").config()
 
 const ApiError = require("./utlis/apiError")
+const globalError = require("./middelwares/errorMiddelware")
 const dbConnection = require('./config/database')
 const categoryRoute = require("./routes/categoryRoute")
 
@@ -30,18 +31,7 @@ app.all("*",(req, res, next) =>{
 })
 
 //Global error handler middleware
-app.use((err,req,res,next)=>{
-    
-    err.statusCode = err.statusCode || 500
-    err.status = err.status || 'error'
-
-res.status(err.statusCode).json({
-    status : err.status,
-    error : err,
-    message: err.message,
-    stack : err.stack
-})
-})
+app.use(globalError)
 
 
 const PORT = process.env.PORT || 5000
