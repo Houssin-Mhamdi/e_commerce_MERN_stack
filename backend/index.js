@@ -36,7 +36,15 @@ app.use(globalError)
 
 const PORT = process.env.PORT || 5000
 
-app.listen(PORT,()=>{
-    console.log(`Example app listening on port ${PORT}`)
+const server = app.listen(PORT,()=>{
+    console.log(` app listening on port ${PORT}`)
 })
+// handle rejection outside of express
+process.on("unhandledRejection",(err)=>{
+    console.error(`UnhandledRejection Errors ${err.name} | ${err.message}`)
+    server.close(()=>{
+        console.error(`Shutting down server ...`)
 
+        process.exit(1)
+    })
+})
