@@ -25,8 +25,14 @@ exports.getAllSubCategory = asyncHandler(async (req, res) => {
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 5;
   const skip = (page - 1) * limit;
-  const subCategory = await subcategory.find({}).skip(skip).limit(limit);
-  res.status(200).json({ result: subCategory.length, page, subcategories: subCategory });
+  const subCategory = await subcategory
+    .find({})
+    .skip(skip)
+    .limit(limit)
+    // .populate({ path: "category", select: "name" });
+  res
+    .status(200)
+    .json({ result: subCategory.length, page, subcategories: subCategory });
 });
 
 // @desc Find subcategory by id
@@ -41,4 +47,41 @@ exports.getSingleSubCategory = asyncHandler(async (req, res, next) => {
     return next(new ApiError(`No category found for this id ${id}`, 404));
   }
   res.status(200).json({ data: subCategory });
+});
+
+// @desc update subcategory
+// @route put /api/v1/subcategory/:id
+// @access private
+
+exports.updateSubCategory = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const { name, category } = req.body;
+
+  const subCategory = await subcategory.findOneAndUpdate(
+    { _id: id },
+    { name, slug: slugify(name), category },
+    { new: true }
+  );
+
+  if (!subCategory) {
+    //res.status(404).json({msg:`No category found for this id ${id}`})
+    return next(new ApiError(`No subcategory found for this id ${id}`, 404));
+  }
+  res.status(200).json({ data: subCategory });
+});
+
+// @desc Delete subcategory
+// @route delete /api/v1/subcategory
+// @access private
+
+exports.deleteSubCategory = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  const subCategory = await subcategory.findByIdAndDelete(id);
+
+  if (!subCategory) {
+    //res.status(404).json({msg:`No category found for this id ${id}`})
+    return next(new ApiError(`No category found for this id ${id}`, 404));
+  }
+  res.status(204).send({ msg: `subCategory deleted successfully` });
 });

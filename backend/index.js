@@ -8,6 +8,7 @@ const globalError = require("./middelwares/errorMiddelware");
 const dbConnection = require("./config/database");
 const categoryRoute = require("./routes/categoryRoute");
 const subcategoryRoute = require("./routes/subCategoryRoute");
+const brandRoute = require("./routes/brandRoute");
 
 dbConnection();
 const app = express();
@@ -21,6 +22,7 @@ if (process.env.NODE_ENV === "development") {
 
 app.use("/api/v1/categories", categoryRoute);
 app.use("/api/v1/subcategories", subcategoryRoute);
+app.use("/api/v1/brands", brandRoute);
 
 app.all("*", (req, res, next) => {
   //const err = new Error(`Can't find this route ${req.originalUrl}`)

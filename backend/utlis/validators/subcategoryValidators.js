@@ -18,12 +18,12 @@ exports.createSubCategoryValidator = [
   validatorMiddleware,
 ];
 
-// exports.UpdateSubCategoryValidator = [
-//   check("id").isMongoId().withMessage("Invalid Subcategory id"),
-//   validatorMiddleware,
-// ];
+exports.UpdateSubCategoryValidator = [
+  check("id").isMongoId().withMessage("Invalid Subcategory id"),
+  validatorMiddleware,
+];
 
-// exports.deleteSubCategoryValidator = [
-//   check("id").isMongoId().withMessage("Invalid Subcategory id"),
-//   validatorMiddleware,
-// ];
+exports.deleteSubCategoryValidator = [
+  check("id").isMongoId().withMessage("Invalid Subcategory id"),
+  validatorMiddleware,
+];
