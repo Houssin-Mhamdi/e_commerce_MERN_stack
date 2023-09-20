@@ -25,11 +25,13 @@ exports.getAllSubCategory = asyncHandler(async (req, res) => {
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 5;
   const skip = (page - 1) * limit;
-  const subCategory = await subcategory
-    .find({})
-    .skip(skip)
-    .limit(limit)
-    // .populate({ path: "category", select: "name" });
+
+  let filterdObject = {};
+  if (req.params.categoryId)
+    filterdObject = { category: req.params.categoryId };
+
+  const subCategory = await subcategory.find(filterdObject).skip(skip).limit(limit);
+  // .populate({ path: "category", select: "name" });
   res
     .status(200)
     .json({ result: subCategory.length, page, subcategories: subCategory });
