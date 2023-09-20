@@ -7,6 +7,11 @@ const ApiError = require("../utlis/apiError");
 // @route POST /api/v1/subcategory
 // @access Private
 
+exports.setCategoryIdToBody = (req, res, next) => {
+  if (!req.body.category) req.body.category = req.params.categoryId;
+  next();
+};
+
 exports.createSubCategory = asyncHandler(async (req, res) => {
   const { name, category } = req.body;
   const subCategory = await subcategory.create({
@@ -21,16 +26,24 @@ exports.createSubCategory = asyncHandler(async (req, res) => {
 // @route GET /api/v1/subcategory
 // @access Public
 
+exports.createdFilterdObj = (req, res, next) => {
+  let filterdObject = {};
+  if (req.params.categoryId) filterdObject = { category: req.params.categoryId };
+  req.filterObj = filterdObject
+  next();
+};
+
 exports.getAllSubCategory = asyncHandler(async (req, res) => {
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 5;
   const skip = (page - 1) * limit;
 
-  let filterdObject = {};
-  if (req.params.categoryId)
-    filterdObject = { category: req.params.categoryId };
+  
 
-  const subCategory = await subcategory.find(filterdObject).skip(skip).limit(limit);
+  const subCategory = await subcategory
+    .find(req.filterObj)
+    .skip(skip)
+    .limit(limit);
   // .populate({ path: "category", select: "name" });
   res
     .status(200)
