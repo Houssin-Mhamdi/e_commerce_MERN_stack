@@ -1,4 +1,5 @@
 const Product = require("../models/productModel");
+const categoryModel = require("../models/categoryModel");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const ApiError = require("../utlis/apiError");
@@ -40,6 +41,15 @@ exports.getSingleProduct = asyncHandler(async (req, res, next) => {
 
 exports.createProduct = asyncHandler(async (req, res) => {
   req.body.slug = slugify(req.body.title);
+
+
+  /**first method for checking if the category is existst */  
+  // const categoryfind = await categoryModel.findById(req.body.category)
+  // console.log(categoryfind)
+  // if(!categoryfind){
+  //   throw new Error("No category found for")
+  // }
+
   const product = await Product.create(req.body);
   res.status(201).json({ data: product });
 });
