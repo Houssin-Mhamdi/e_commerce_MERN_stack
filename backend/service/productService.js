@@ -12,6 +12,12 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
   const queryStringObj = { ...req.query };
   const executedFields = ["page", "sort", "limit", "fields"];
   executedFields.forEach((field) => delete queryStringObj[field]);
+  //apply filtering using [gte ,gt , lte,lt]
+  // {price: {$gte: 50}, ratingsAverage: {$gte: 4}}
+  // { ratingsAverage: {gte: '4'}, price: {gte: '50' } }
+
+  let queryStr = JSON.stringify(queryStringObj);
+  queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
   //2)pagination
   const page = req.query.page * 1 || 1;
@@ -19,7 +25,7 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
   const skip = (page - 1) * limit;
 
   // build query
-  const mongooseQuery = Product.find(queryStringObj)
+  const mongooseQuery = Product.find(JSON.parse(queryStr))
     .skip(skip)
     .limit(limit)
     .populate({ path: "category", select: "name" });
