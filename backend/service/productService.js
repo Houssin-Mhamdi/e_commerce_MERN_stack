@@ -10,7 +10,7 @@ const ApiError = require("../utlis/apiError");
 exports.getAllProducts = asyncHandler(async (req, res) => {
   //1)filtering
   const queryStringObj = { ...req.query };
-  const executedFields = ["page", "sort", "limit", "fields"];
+  const executedFields = ["page", "sort", "limit", "fields", "keyword"];
   executedFields.forEach((field) => delete queryStringObj[field]);
   //apply filtering using [gte ,gt , lte,lt]
   // {price: {$gte: 50}, ratingsAverage: {$gte: 4}}
@@ -29,14 +29,35 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
     .skip(skip)
     .limit(limit)
     .populate({ path: "category", select: "name" });
-  console.log(req.query.sort);
+
+  //3) sorting
   if (req.query.sort) {
     const sortBy = req.query.sort.split(",").join(" ");
     console.log(sortBy);
     mongooseQuery = mongooseQuery.sort(sortBy);
-  }else{
+  } else {
     mongooseQuery = mongooseQuery.sort("-createdAt");
   }
+
+  //4) field limiting
+  if (req.query.fields) {
+    const fields = req.query.fields.split(",").join(" ");
+    mongooseQuery = mongooseQuery.select(fields);
+  } else {
+    mongooseQuery = mongooseQuery.select("-__v");
+  }
+
+  // 5) Search
+  if (req.query.keyword) {
+    const query = {};
+    const pattern = new RegExp(`\\b${req.query.keyword}`, "i");
+    query.$or = [
+      { title: { $regex: pattern } },
+      { description: { $regex: pattern } },
+    ];
+    mongooseQuery = mongooseQuery.find(query);
+  }
+
   //execute the query
   const products = await mongooseQuery;
   res.status(200).json({ result: products.length, page, data: products });
