@@ -8,13 +8,23 @@ const ApiError = require("../utlis/apiError");
 // @access Public
 
 exports.getAllProducts = asyncHandler(async (req, res) => {
+  //1)filtering
+  const queryStringObj = { ...req.query };
+  const executedFields = ["page", "sort", "limit", "fields"];
+  executedFields.forEach((field) => delete queryStringObj[field]);
+
+  //2)pagination
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 5;
   const skip = (page - 1) * limit;
-  const products = await Product.find({})
+
+  // build query
+  const mongooseQuery = Product.find(queryStringObj)
     .skip(skip)
     .limit(limit)
     .populate({ path: "category", select: "name" });
+  //execute the query
+  const products = await mongooseQuery;
   res.status(200).json({ result: products.length, page, data: products });
 });
 
@@ -42,8 +52,7 @@ exports.getSingleProduct = asyncHandler(async (req, res, next) => {
 exports.createProduct = asyncHandler(async (req, res) => {
   req.body.slug = slugify(req.body.title);
 
-
-  /**first method for checking if the category is existst */  
+  /**first method for checking if the category is existst */
   // const categoryfind = await categoryModel.findById(req.body.category)
   // console.log(categoryfind)
   // if(!categoryfind){
@@ -60,11 +69,9 @@ exports.createProduct = asyncHandler(async (req, res) => {
 
 exports.updateProduct = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  if(req.body.title){
+  if (req.body.title) {
     req.body.slug = slugify(req.body.title);
   }
-  
-  
 
   const product = await Product.findOneAndUpdate({ _id: id }, req.body, {
     new: true,
