@@ -28,7 +28,7 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
   const apiFeatures = new ApiFeatures(Product.find(), req.query)
     .paginate(countDocuments)
     .filter()
-    .search()
+    .search("Product")
     .limitFields()
     .sort();
   // build query

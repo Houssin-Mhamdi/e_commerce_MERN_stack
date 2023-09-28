@@ -2,6 +2,7 @@ const subcategory = require("../models/subCategoryModel");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const ApiError = require("../utlis/apiError");
+const ApiFeatures = require("../utlis/apiFeatures");
 
 // @desc Create a new category
 // @route POST /api/v1/subcategory
@@ -28,26 +29,32 @@ exports.createSubCategory = asyncHandler(async (req, res) => {
 
 exports.createdFilterdObj = (req, res, next) => {
   let filterdObject = {};
-  if (req.params.categoryId) filterdObject = { category: req.params.categoryId };
-  req.filterObj = filterdObject
+  if (req.params.categoryId)
+    filterdObject = { category: req.params.categoryId };
+  req.filterObj = filterdObject;
   next();
 };
 
 exports.getAllSubCategory = asyncHandler(async (req, res) => {
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 5;
-  const skip = (page - 1) * limit;
+  const countDocuments = await subcategory.countDocuments();
+  const apiFeatures = new ApiFeatures(subcategory.find(), req.query)
+    .paginate(countDocuments)
+    .filter()
+    .search()
+    .limitFields()
+    .sort();
+  // build query
+  //execute the query
+  // const products = await apiFeatures.mongooseQuery;
+  const { mongooseQuery, paginationResult } = apiFeatures;
 
-  
+  const subCategory = await mongooseQuery;
 
-  const subCategory = await subcategory
-    .find(req.filterObj)
-    .skip(skip)
-    .limit(limit);
-  // .populate({ path: "category", select: "name" });
-  res
-    .status(200)
-    .json({ result: subCategory.length, page, subcategories: subCategory });
+  res.status(200).json({
+    result: subCategory.length,
+    paginationResult,
+    subcategories: subCategory,
+  });
 });
 
 // @desc Find subcategory by id

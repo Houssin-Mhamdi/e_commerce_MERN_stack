@@ -37,16 +37,19 @@ class ApiFeatures {
     return this;
   }
 
-  search() {
+  search(modelName) {
     if (this.queryString.keyword) {
-      const query = {};
+      let query = {};
       const pattern = new RegExp(`\\b${this.queryString.keyword}`, "i");
-      query.$or = [
-        { title: { $regex: pattern } },
-        { description: { $regex: pattern } },
-      ];
-      console.log(pattern);
-      console.log(query);
+      if (modelName === "Product") {
+        query.$or = [
+          { title: { $regex: pattern } },
+          { description: { $regex: pattern } },
+        ];
+      } else {
+        query = { name: { $regex: pattern } };
+      }
+
       this.mongooseQuery = this.mongooseQuery.find(query);
     }
 
