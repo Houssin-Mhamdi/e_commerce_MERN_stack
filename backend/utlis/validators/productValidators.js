@@ -2,6 +2,7 @@ const { check } = require("express-validator");
 const validatorMiddleware = require("../../middelwares/validatorMiddelware");
 const categoryModel = require("../../models/categoryModel");
 const SubCategory = require("../../models/subCategoryModel");
+const slugify = require("slugify");
 
 exports.getProductValidator = [
   check("id").isMongoId().withMessage("Invalid category id"),
@@ -119,13 +120,19 @@ exports.createProductValidator = [
 
 exports.UpdateProductValidator = [
   check("id").isMongoId().withMessage("Invalid category id"),
-  check("category").custom((value) =>
+  check("category").optional().custom((value) =>
     categoryModel.findById(value).then((category) => {
       if (!category) {
         return Promise.reject(new Error(`No category for this ID ${category}`));
       }
     })
   ),
+  check("title")
+    .optional()
+    .custom((val, { req }) => {
+      req.body.slug = slugify(val);
+      return true;
+    }),
   validatorMiddleware,
 ];
 
