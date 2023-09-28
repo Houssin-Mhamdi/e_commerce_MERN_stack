@@ -3,64 +3,67 @@ const categoryModel = require("../models/categoryModel");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const ApiError = require("../utlis/apiError");
+const ApiFeatures = require("../utlis/apiFeatures");
 // @desc Find all Product
 // @route GET /api/v1/Product
 // @access Public
 
 exports.getAllProducts = asyncHandler(async (req, res) => {
   //1)filtering
-  const queryStringObj = { ...req.query };
-  const executedFields = ["page", "sort", "limit", "fields", "keyword"];
-  executedFields.forEach((field) => delete queryStringObj[field]);
+  // const queryStringObj = { ...req.query };
+  // const executedFields = ["page", "sort", "limit", "fields", "keyword"];
+  // executedFields.forEach((field) => delete queryStringObj[field]);
   //apply filtering using [gte ,gt , lte,lt]
   // {price: {$gte: 50}, ratingsAverage: {$gte: 4}}
   // { ratingsAverage: {gte: '4'}, price: {gte: '50' } }
 
-  let queryStr = JSON.stringify(queryStringObj);
-  queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+  // let queryStr = JSON.stringify(queryStringObj);
+  // queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
   //2)pagination
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 5;
-  const skip = (page - 1) * limit;
-
+  // const page = req.query.page * 1 || 1;
+  // const limit = req.query.limit * 1 || 5;
+  // const skip = (page - 1) * limit;
+  const apiFeatures = new ApiFeatures(Product.find(), req.query)
+    .paginate()
+    .filter()
+    .search()
+    .limitFields()
+    .sort();
   // build query
-  let mongooseQuery = Product.find(JSON.parse(queryStr))
-    .skip(skip)
-    .limit(limit)
-    .populate({ path: "category", select: "name" });
+  //execute the query
+  const products = await apiFeatures.mongooseQuery;
+  res.status(200).json({ result: products.length, data: products });
 
   //3) sorting
-  if (req.query.sort) {
-    const sortBy = req.query.sort.split(",").join(" ");
-    console.log(sortBy);
-    mongooseQuery = mongooseQuery.sort(sortBy);
-  } else {
-    mongooseQuery = mongooseQuery.sort("-createdAt");
-  }
+  // if (req.query.sort) {
+  //   const sortBy = req.query.sort.split(",").join(" ");
+  //   console.log(sortBy);
+  //   mongooseQuery = mongooseQuery.sort(sortBy);
+  // } else {
+  //   mongooseQuery = mongooseQuery.sort("-createdAt");
+  // }
 
-  //4) field limiting
-  if (req.query.fields) {
-    const fields = req.query.fields.split(",").join(" ");
-    mongooseQuery = mongooseQuery.select(fields);
-  } else {
-    mongooseQuery = mongooseQuery.select("-__v");
-  }
+  // //4) field limiting
+  // if (req.query.fields) {
+  //   const fields = req.query.fields.split(",").join(" ");
+  //   mongooseQuery = mongooseQuery.select(fields);
+  // } else {
+  //   mongooseQuery = mongooseQuery.select("-__v");
+  // }
 
-  // 5) Search
-  if (req.query.keyword) {
-    const query = {};
-    const pattern = new RegExp(`\\b${req.query.keyword}`, "i");
-    query.$or = [
-      { title: { $regex: pattern } },
-      { description: { $regex: pattern } },
-    ];
-    mongooseQuery = mongooseQuery.find(query);
-  }
-
-  //execute the query
-  const products = await mongooseQuery;
-  res.status(200).json({ result: products.length, page, data: products });
+  // // 5) Search
+  // if (req.query.keyword) {
+  //   const query = {};
+  //   const pattern = new RegExp(`\\b${req.query.keyword}`, "i");
+  //   query.$or = [
+  //     { title: { $regex: pattern } },
+  //     { description: { $regex: pattern } },
+  //   ];
+  //   console.log(pattern)
+  //   console.log(query)
+  //   mongooseQuery = mongooseQuery.find(query);
+  // }
 });
 
 // @desc Find Product by id
