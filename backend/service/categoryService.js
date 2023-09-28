@@ -3,6 +3,7 @@ const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const ApiError = require("../utlis/apiError");
 const ApiFeatures = require("../utlis/apiFeatures");
+const factory = require("../service/handlersFactory");
 
 // @desc Find all category
 // @route GET /api/v1/category
@@ -76,14 +77,4 @@ exports.updateCategory = asyncHandler(async (req, res, next) => {
 // @route delete /api/v1/category
 // @access private
 
-exports.deleteCategory = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-
-  const category = await categoryModel.findByIdAndDelete(id);
-
-  if (!category) {
-    //res.status(404).json({msg:`No category found for this id ${id}`})
-    return next(new ApiError(`No category found for this id ${id}`, 404));
-  }
-  res.status(204).send({ msg: `Category deleted successfully` });
-});
+exports.deleteCategory = factory.deleteOne(categoryModel)
