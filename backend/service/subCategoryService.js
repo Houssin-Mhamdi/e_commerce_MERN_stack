@@ -14,15 +14,7 @@ exports.setCategoryIdToBody = (req, res, next) => {
   next();
 };
 
-exports.createSubCategory = asyncHandler(async (req, res) => {
-  const { name, category } = req.body;
-  const subCategory = await subcategory.create({
-    name,
-    slug: slugify(name),
-    category,
-  });
-  res.status(201).json({ data: subCategory });
-});
+exports.createSubCategory = factory.createOne(subcategory);
 
 // @desc Find all subcategory
 // @route GET /api/v1/subcategory

@@ -95,19 +95,7 @@ exports.getSingleProduct = asyncHandler(async (req, res, next) => {
 // @route POST /api/v1/product
 // @access Private
 
-exports.createProduct = asyncHandler(async (req, res) => {
-  req.body.slug = slugify(req.body.title);
-
-  /**first method for checking if the category is existst */
-  // const categoryfind = await categoryModel.findById(req.body.category)
-  // console.log(categoryfind)
-  // if(!categoryfind){
-  //   throw new Error("No category found for")
-  // }
-
-  const product = await Product.create(req.body);
-  res.status(201).json({ data: product });
-});
+exports.createProduct = factory.createOne(Product);
 
 // @desc update product
 // @route put /api/v1/product/:id
