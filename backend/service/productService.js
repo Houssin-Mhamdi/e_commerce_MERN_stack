@@ -78,19 +78,7 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
 // @route GET /api/v1/Product/:id
 // @access Public
 
-exports.getSingleProduct = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const product = await Product.findById(id).populate({
-    path: "category",
-    select: "name",
-  });
-  if (!product) {
-    //res.status(404).json({msg:`No category found for this id ${id}`})
-    return next(new ApiError(`No product found for this id ${id}`, 404));
-  }
-  res.status(200).json({ data: product });
-});
-
+exports.getSingleProduct = factory.getOne(Product)
 // @desc Create a new product
 // @route POST /api/v1/product
 // @access Private
