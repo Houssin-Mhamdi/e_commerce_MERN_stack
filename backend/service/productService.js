@@ -24,16 +24,22 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
   // const page = req.query.page * 1 || 1;
   // const limit = req.query.limit * 1 || 5;
   // const skip = (page - 1) * limit;
+  const countDocuments = await Product.countDocuments();
   const apiFeatures = new ApiFeatures(Product.find(), req.query)
-    .paginate()
+    .paginate(countDocuments)
     .filter()
     .search()
     .limitFields()
     .sort();
   // build query
   //execute the query
-  const products = await apiFeatures.mongooseQuery;
-  res.status(200).json({ result: products.length, data: products });
+  // const products = await apiFeatures.mongooseQuery;
+  const { mongooseQuery,paginationResult } = apiFeatures;
+
+  const products = await mongooseQuery;
+  res
+    .status(200)
+    .json({ result: products.length, paginationResult, data: products });
 
   //3) sorting
   // if (req.query.sort) {
