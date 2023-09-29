@@ -1,24 +1,31 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
-const subCategorySchema = new mongoose.Schema({
+const subCategorySchema = new mongoose.Schema(
+  {
     name: {
-        type:String,
-        trim:true,
-        unique:[true,"SubCategory must be unique"],
-        minlength:[2,"Too short subCategory name"],
-        maxlength:[30 , "Too long subCategory name"],
+      type: String,
+      trim: true,
+      unique: [true, "SubCategory must be unique"],
+      minlength: [2, "Too short subCategory name"],
+      maxlength: [30, "Too long subCategory name"],
     },
     slug: {
-        type: String,
-        lowercase: true,
+      type: String,
+      lowercase: true,
     },
-    category:{
-        type:mongoose.Schema.ObjectId,
-        ref:"Category",
-        required:[true,"SubCategory must be belongs to parent category"],
+    category: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Category",
+      required: [true, "SubCategory must be belongs to parent category"],
+    },
+  },
+  { timestamps: true }
+);
 
-    }
-},{timestamps: true})
+subCategorySchema.pre(/^find/, function (next) {
+  this.populate({ path: "category", select: "name" });
+  next();
+});
 
-const SubCategory = mongoose.model("SubCategory", subCategorySchema)
-module.exports = SubCategory
+const SubCategory = mongoose.model("SubCategory", subCategorySchema);
+module.exports = SubCategory;
