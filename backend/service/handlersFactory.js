@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const ApiError = require("../utlis/apiError");
+const ApiFeatures = require("../utlis/apiFeatures");
 
 exports.deleteOne = (Model) =>
   asyncHandler(async (req, res, next) => {
@@ -45,4 +46,29 @@ exports.getOne = (Model) =>
       return next(new ApiError(`No document found for this id ${id}`, 404));
     }
     res.status(200).json({ data: document });
+  });
+
+exports.getAll = (Model,modelName) =>
+  asyncHandler(async (req, res) => {
+    let filter = {};
+    if (req.filterObj){
+      filter = req.filterObj
+    }
+    const countDocuments = await Model.countDocuments();
+    const apiFeatures = new ApiFeatures(Model.find(filter), req.query)
+      .paginate(countDocuments)
+      .filter()
+      .search(modelName)
+      .limitFields()
+      .sort()
+      
+    // build query
+    //execute the query
+    // const products = await apiFeatures.mongooseQuery;
+    const { mongooseQuery, paginationResult } = apiFeatures;
+
+    const document = await mongooseQuery;
+    res
+      .status(200)
+      .json({ result: document.length, paginationResult, data: document });
   });
